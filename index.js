@@ -20,7 +20,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
+var flag = 0;
 //--------------------------------------------------------------------------------------------------------------------------------------
 //--------------------------------------------------------------------------------------------------------------------------------------
 //                                                          CONNECTING DB
@@ -29,7 +29,10 @@ app.use(express.urlencoded({ extended: true }));
 
 
 mongoose.connect(process.env.URI).then(() => {
-    console.log("connection with db successful");
+    console.log("db connected");
+    flag=1;
+}).catch(()=>{
+    flag=0;
 });
 
 
@@ -123,7 +126,12 @@ function verify(req, res, next) {
 //                                                        HOME ROUTE
 //@desc:- Test route
 app.get("/",(req,res)=>{
-    res.send("yes the server is up");
+    if(flag===1){
+        res.send("yes the server is up");
+    }
+    else if (flag===0){
+        res.send("server up but not connected to db");
+    }
 })
 
 //                                                        LOGIN ROUTE
