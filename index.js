@@ -20,7 +20,6 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-var flag = 0;
 //--------------------------------------------------------------------------------------------------------------------------------------
 //--------------------------------------------------------------------------------------------------------------------------------------
 //                                                          CONNECTING DB
@@ -30,9 +29,8 @@ var flag = 0;
 
 mongoose.connect(process.env.URI).then(() => {
     console.log("db connected");
-    flag=1;
-}).catch(()=>{
-    flag=0;
+}).catch((err)=>{
+    console.log(err);
 });
 
 
@@ -62,20 +60,6 @@ const codeSchema = new mongoose.Schema({
 //Models for respective schemas
 const User = mongoose.model("users", userSchema);
 const Code = mongoose.model("codes", codeSchema);
-
-//--------------------------------------------------------------------------------------------------------------------------------------
-//--------------------------------------------------------------------------------------------------------------------------------------
-//                                                  (CODE TO ADD DATA IN DB MANUALLY)
-//--------------------------------------------------------------------------------------------------------------------------------------
-//--------------------------------------------------------------------------------------------------------------------------------------
-
-
-// const sampleUser = new User({
-//     username:"himanshu",
-//     password:"password"
-// });
-
-// sampleUser.save();
 
 
 
@@ -124,14 +108,9 @@ function verify(req, res, next) {
 //--------------------------------------------------------------------------------------------------------------------------------------
 
 //                                                        HOME ROUTE
-//@desc:- Test route
+//@desc:- Test route to check if api is working or not
 app.get("/",(req,res)=>{
-    if(flag===1){
         res.send("yes the server is up");
-    }
-    else if (flag===0){
-        res.send("server up but not connected to db");
-    }
 })
 
 //                                                        LOGIN ROUTE
