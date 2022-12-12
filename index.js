@@ -190,7 +190,7 @@ app.post("/newpost", verify, (req, res) => {
 
 //                                                             GETTING USER
 
-app.get("/user/:username", verify, (req, res) => {
+app.get("/user/:username", (req, res) => {
     User.find({ username: req.params.username }, function (err, doc) {
         if (!err) {
             const userID = doc[0]._id;
@@ -204,10 +204,13 @@ app.get("/user/:username", verify, (req, res) => {
 })
 //                                                             GETTING USER CODE
 
-app.get("/user/:username/:codeID", verify, (req, res) => {
+app.get("/user/:username/:codeID", (req, res) => {
     Code.find({ _id: req.params.codeID, isPublic: true }, function (err, doc) {
         if (!err) {
             res.send(doc);
+        }
+        else{
+            res.send(err.message);
         }
     })
 })
@@ -273,6 +276,9 @@ app.put("/codes/:id", verify, (req, res) => {
 
 })
 
+app.get("*",(req,res)=>{
+    res.send("not a valid route");
+})
 
 
 //--------------------------------------------------------------------------------------------------------------------------------------
