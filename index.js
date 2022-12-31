@@ -139,9 +139,9 @@ app.post("/signup", (req, res) => {
           { username: newUser.username, password: newUser.password },
           process.env.KEY
         );
-        res.json({ message: "User created", token: accessToken });
+        res.json({ message: "User created", token: accessToken , isLogin:true });
       } else {
-        res.send("username already taken");
+        res.json({message:"username already taken" , isLogin:false});
       }
     } else {
       res.send(err);
