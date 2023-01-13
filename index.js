@@ -20,6 +20,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
 //--------------------------------------------------------------------------------------------------------------------------------------
 //--------------------------------------------------------------------------------------------------------------------------------------
 //                                                          CONNECTING DB
@@ -46,6 +47,8 @@ mongoose
 const userSchema = new mongoose.Schema({
   username: String,
   password: String,
+  email: String,
+  viewCount: Number
 });
 
 //CODE SCHEMA
@@ -92,6 +95,22 @@ function verify(req, res, next) {
   }
 }
 
+function userExists(req, res, next) {
+  if (req.body.username && req.body.email && req.body.password) {
+    User.find({$or:[{'email':req.body.email},{'username':req.body.username}]},function(err,data){
+      if (data.length===0){
+        next();
+      }
+      else{
+        res.json({message:"Username or Email already in use", isLogin : false});
+      }
+    })
+  }
+  else{
+    res.json({message:"fill the details properly", isLogin:false});
+  }
+}
+
 //--------------------------------------------------------------------------------------------------------------------------------------
 //--------------------------------------------------------------------------------------------------------------------------------------
 //                                                          ROUTES
@@ -114,44 +133,40 @@ app.post("/login", (req, res) => {
           { username: req.body.username, password: req.body.password },
           process.env.KEY
         );
-        res.json({ token: accessToken, message: "logged in successfully" , isLogin: true });
+        res.json({
+          token: accessToken,
+          message: "logged in successfully",
+          isLogin: true,
+        });
       } else {
         res.json({ message: "username or password wrong", isLogin: false });
       }
     } else {
-      res.json({ message: "username or password wrong" , isLogin: false });
+      res.json({ message: "username or password wrong", isLogin: false });
     }
   });
 });
 
 //                                                        SIGNUP ROUTE
 
-app.post("/signup", (req, res) => {
-  User.findOne({ username: req.body.username }, function (err, data) {
-    if (!err) {
-      if (!data && req.body.username) {
-        const newUser = new User({
-          username: req.body.username,
-          password: req.body.password,
-        });
-        newUser.save();
-        const accessToken = jwt.sign(
-          { username: newUser.username, password: newUser.password },
-          process.env.KEY
-        );
-        res.json({ message: "User created", token: accessToken , isLogin:true });
-      } else {
-        res.json({message:"username already taken" , isLogin:false});
-      }
-    } else {
-      res.send(err);
-    }
+app.post("/signup", userExists, (req, res) => {
+  const newUser = new User({
+    username: req.body.username,
+    password: req.body.password,
+    email:req.body.email,
+    viewCount:0
   });
+  newUser.save();
+  const accessToken = jwt.sign(
+    { username: newUser.username, password: newUser.password },
+    process.env.KEY
+  );
+  res.json({ message: "User created", token: accessToken, isLogin: true });
 });
 
 //                                                            POSTING CODE
 
-app.post("/newpost", verify, (req, res) => {
+app.post("/codes", verify, (req, res) => {
   Code.find(
     { title: req.body.title, userID: req.user._id },
     function (err, doc) {
