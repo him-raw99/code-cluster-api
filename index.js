@@ -219,17 +219,21 @@ app.get("/user/:username/:codeID", (req, res) => {
   });
 });
 
-//                                                             GETTING ALL POSTS
+//                                                             GETTING ALL CODES
 //desc@- Only send title and ids
 
 app.get("/codes", verify, (req, res) => {
   Code.find({ userID: req.user._id }, function (err, doc) {
     if (!err) {
-      res.send(doc);
+      const data = doc;
+      data.forEach(code => {
+        code.code = code.code.slice(0,50) + "...";
+      });
+      res.json({codes:data});
     } else {
       console.log(err);
     }
-  }).select({ code: 0, userID: 0 });
+  }).select({ userID: 0 });
 });
 
 //                                                             GETTING ONE POSTS
