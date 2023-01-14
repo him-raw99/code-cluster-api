@@ -120,7 +120,7 @@ function userExists(req, res, next) {
 //                                                        HOME ROUTE
 //@desc:- Test route to check if api is working or not
 app.get("/", (req, res) => {
-  res.send("yes the server is up");
+  res.json({message:"yes the server is up"});
 });
 
 //                                                        LOGIN ROUTE
@@ -182,12 +182,12 @@ app.post("/codes", verify, (req, res) => {
             isPublic: public,
           });
           newCode.save();
-          res.send("saved successfully");
+          res.json({ message:"saved successfully",success:true});
         } else {
-          res.send("fill the details again");
+          res.json({message:"fill the details again",success:false});
         }
       } else {
-        res.json({ message: "change the title" });
+        res.json({ message: "change the title",success:false});
       }
     }
   );
@@ -201,7 +201,7 @@ app.get("/user/:username", (req, res) => {
       const userID = doc[0]._id;
       Code.find({ userID: userID, isPublic: true }, function (err, doc) {
         if (!err) {
-          res.send(doc);
+          res.json({codes:doc,success:true});
         }
       }).select({ code: 0, userID: 0 });
     }
@@ -212,9 +212,9 @@ app.get("/user/:username", (req, res) => {
 app.get("/user/:username/:codeID", (req, res) => {
   Code.find({ _id: req.params.codeID, isPublic: true }, function (err, doc) {
     if (!err) {
-      res.send(doc);
+      res.json({code:doc,success:true});
     } else {
-      res.send(err.message);
+      res.json({message:err,success:false});
     }
   });
 });
@@ -227,9 +227,9 @@ app.get("/codes", verify, (req, res) => {
     if (!err) {
       const data = doc;
       data.forEach(code => {
-        code.code = code.code.slice(0,50) + "...";
+        code.code = code.code.slice(0,150) + "...";
       });
-      res.json({codes:data});
+      res.json({codes:data,success:true});
     } else {
       console.log(err);
     }
@@ -242,7 +242,7 @@ app.get("/codes", verify, (req, res) => {
 app.get("/codes/:id", verify, (req, res) => {
   Code.findOne({ _id: req.params.id }, function (err, doc) {
     if (!err) {
-      res.send(doc);
+      res.json({code:doc,success:true});
     }
   });
 });
@@ -253,7 +253,7 @@ app.get("/codes/:id", verify, (req, res) => {
 app.delete("/codes/:id", verify, (req, res) => {
   Code.deleteOne({ _id: req.params.id }, function (err) {
     if (!err) {
-      res.send("sucessfully deleted");
+      res.json({message:"sucessfully deleted",success:true});
     }
   });
 });
@@ -276,17 +276,17 @@ app.put("/codes/:id", verify, (req, res) => {
             },
             function (err) {
               if (!err) {
-                res.send("update sucessfull");
+                res.json({message:"update sucessfull",success:true});
               }
             }
           );
         } else {
-          res.json({ message: "change the title" });
+          res.json({ message: "change the title",success:false });
         }
       }
     );
   } else {
-    res.send("body is empty");
+    res.json({ message: "body is empty",success:false });
   }
 });
 
