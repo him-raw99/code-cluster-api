@@ -263,10 +263,11 @@ app.delete("/codes/:id", verify, (req, res) => {
 
 app.put("/codes/:id", verify, (req, res) => {
   if (req.body.title || req.body.code) {
+
     Code.find(
       { title: req.body.title, userID: req.user._id },
       function (err, doc) {
-        if (!err && doc.length <= 1) {
+        if (!err && (doc.length < 1 || (doc.length === 1 && doc[0].code != req.body.code) )) {
           Code.updateOne(
             { _id: req.params.id },
             {
@@ -281,7 +282,7 @@ app.put("/codes/:id", verify, (req, res) => {
             }
           );
         } else {
-          res.json({ message: "change the title",success:false });
+          res.json({ message: "change the title / body",success:false });
         }
       }
     );
