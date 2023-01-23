@@ -48,7 +48,7 @@ const userSchema = new mongoose.Schema({
   username: String,
   password: String,
   email: String,
-  viewCount: Number
+  viewCount: Number,
 });
 
 //CODE SCHEMA
@@ -97,17 +97,21 @@ function verify(req, res, next) {
 
 function userExists(req, res, next) {
   if (req.body.username && req.body.email && req.body.password) {
-    User.find({$or:[{'email':req.body.email},{'username':req.body.username}]},function(err,data){
-      if (data.length===0){
-        next();
+    User.find(
+      { $or: [{ email: req.body.email }, { username: req.body.username }] },
+      function (err, data) {
+        if (data.length === 0) {
+          next();
+        } else {
+          res.json({
+            message: "Username or Email already in use",
+            isLogin: false,
+          });
+        }
       }
-      else{
-        res.json({message:"Username or Email already in use", isLogin : false});
-      }
-    })
-  }
-  else{
-    res.json({message:"fill the details properly", isLogin:false});
+    );
+  } else {
+    res.json({ message: "fill the details properly", isLogin: false });
   }
 }
 
@@ -120,7 +124,7 @@ function userExists(req, res, next) {
 //                                                        HOME ROUTE
 //@desc:- Test route to check if api is working or not
 app.get("/", (req, res) => {
-  res.json({message:"yes the server is up"});
+  res.json({ message: "yes the server is up" });
 });
 
 //                                                        LOGIN ROUTE
@@ -153,8 +157,8 @@ app.post("/signup", userExists, (req, res) => {
   const newUser = new User({
     username: req.body.username,
     password: req.body.password,
-    email:req.body.email,
-    viewCount:0
+    email: req.body.email,
+    viewCount: 0,
   });
   newUser.save();
   const accessToken = jwt.sign(
@@ -182,12 +186,12 @@ app.post("/codes", verify, (req, res) => {
             isPublic: public,
           });
           newCode.save();
-          res.json({ message:"saved successfully",success:true});
+          res.json({ message: "saved successfully", success: true });
         } else {
-          res.json({message:"fill the details again",success:false});
+          res.json({ message: "fill the details again", success: false });
         }
       } else {
-        res.json({ message: "change the title",success:false});
+        res.json({ message: "change the title", success: false });
       }
     }
   );
@@ -201,7 +205,7 @@ app.get("/user/:username", (req, res) => {
       const userID = doc[0]._id;
       Code.find({ userID: userID, isPublic: true }, function (err, doc) {
         if (!err) {
-          res.json({codes:doc,success:true});
+          res.json({ codes: doc, success: true });
         }
       }).select({ code: 0, userID: 0 });
     }
@@ -212,9 +216,9 @@ app.get("/user/:username", (req, res) => {
 app.get("/user/:username/:codeID", (req, res) => {
   Code.find({ _id: req.params.codeID, isPublic: true }, function (err, doc) {
     if (!err) {
-      res.json({code:doc,success:true});
+      res.json({ code: doc, success: true });
     } else {
-      res.json({message:err,success:false});
+      res.json({ message: err, success: false });
     }
   });
 });
@@ -226,10 +230,10 @@ app.get("/codes", verify, (req, res) => {
   Code.find({ userID: req.user._id }, function (err, doc) {
     if (!err) {
       const data = doc;
-      data.forEach(code => {
-        code.code = code.code.slice(0,150) + "...";
+      data.forEach((code) => {
+        code.code = code.code.slice(0, 150) + "...";
       });
-      res.json({codes:data,success:true});
+      res.json({ codes: data, success: true });
     } else {
       console.log(err);
     }
@@ -242,7 +246,7 @@ app.get("/codes", verify, (req, res) => {
 app.get("/codes/:id", verify, (req, res) => {
   Code.findOne({ _id: req.params.id }, function (err, doc) {
     if (!err) {
-      res.json({code:doc,success:true});
+      res.json({ code: doc, success: true });
     }
   });
 });
@@ -253,7 +257,7 @@ app.get("/codes/:id", verify, (req, res) => {
 app.delete("/codes/:id", verify, (req, res) => {
   Code.deleteOne({ _id: req.params.id }, function (err) {
     if (!err) {
-      res.json({message:"sucessfully deleted",success:true});
+      res.json({ message: "sucessfully deleted", success: true });
     }
   });
 });
@@ -262,12 +266,14 @@ app.delete("/codes/:id", verify, (req, res) => {
 //desc@- send the id in the url and token in head and new data in body
 
 app.put("/codes/:id", verify, (req, res) => {
-  if (req.body.title || req.body.code) {
-
+  if (req.body.title && req.body.code) {
     Code.find(
       { title: req.body.title, userID: req.user._id },
       function (err, doc) {
-        if (!err && (doc.length < 1 || (doc.length === 1 && doc[0].code != req.body.code) )) {
+        if (
+          !err &&
+          (doc.length < 1 || (doc.length === 1 && doc[0]._id == req.params.id))
+        ) {
           Code.updateOne(
             { _id: req.params.id },
             {
@@ -277,17 +283,17 @@ app.put("/codes/:id", verify, (req, res) => {
             },
             function (err) {
               if (!err) {
-                res.json({message:"update sucessfull",success:true});
+                res.json({ message: "update sucessfull", success: true });
               }
             }
           );
         } else {
-          res.json({ message: "change the title / body",success:false });
+          res.json({ message: "change the title", success: false });
         }
       }
     );
   } else {
-    res.json({ message: "body is empty",success:false });
+    res.json({ message: "form empty", success: false });
   }
 });
 
