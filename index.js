@@ -177,7 +177,7 @@ app.post("/codes", verify, (req, res) => {
       if (!err && doc.length === 0) {
         const title = req.body.title;
         const code = req.body.code;
-        const public = req.body.isPublic === "true" ? true : false;
+        const public = req.body.isPublic ? true : false;
         if (title && code) {
           const newCode = new Code({
             title,
