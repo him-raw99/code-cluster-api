@@ -205,9 +205,13 @@ app.get("/user/:username", (req, res) => {
       const userID = doc[0]._id;
       Code.find({ userID: userID, isPublic: true }, function (err, doc) {
         if (!err) {
-          res.json({ codes: doc, success: true });
+          const data = doc;
+          data.forEach((code) => {
+            code.code = code.code.slice(0, 150) + "...";
+          });
+          res.json({ codes: data, success: true });
         }
-      }).select({ code: 0, userID: 0 });
+      }).select({isPublic:0, userID: 0 });
     }
   });
 });
