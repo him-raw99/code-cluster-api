@@ -9,6 +9,7 @@ const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 const jwt = require("jsonwebtoken");
+const bcrypt = require("bcryptjs");
 const app = express();
 
 //--------------------------------------------------------------------------------------------------------------------------------------
@@ -129,12 +130,13 @@ app.get("/", (req, res) => {
 
 //                                                        LOGIN ROUTE
 
-app.post("/login", (req, res) => {
-  User.findOne({ username: req.body.username }, function (err, data) {
+app.post("/login", async(req, res) => {
+  User.findOne({ username: req.body.username }, async(err, data) => {
     if (data) {
-      if (data.password === req.body.password) {
+      const pass = await bcrypt.compare(req.body.password,data.password);
+      if (pass) {
         const accessToken = jwt.sign(
-          { username: req.body.username, password: req.body.password },
+          { username: req.body.username, password: data.password },
           process.env.KEY
         );
         res.json({
@@ -153,13 +155,15 @@ app.post("/login", (req, res) => {
 
 //                                                        SIGNUP ROUTE
 
-app.post("/signup", userExists, (req, res) => {
+app.post("/signup", userExists, async(req, res) => {
+  const pass = await bcrypt.hash(req.body.password,10);
   const newUser = new User({
     username: req.body.username,
-    password: req.body.password,
+    password: pass,
     email: req.body.email,
     viewCount: 0,
   });
+  console.log(pass);
   newUser.save();
   const accessToken = jwt.sign(
     { username: newUser.username, password: newUser.password },
@@ -215,6 +219,7 @@ app.get("/user/:username", (req, res) => {
     }
   });
 });
+
 //                                                             GETTING USER CODE
 
 app.get("/user/:username/:codeID", (req, res) => {
