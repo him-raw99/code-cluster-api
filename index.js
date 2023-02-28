@@ -201,6 +201,12 @@ app.post("/codes", verify, (req, res) => {
   );
 });
 
+//                                                            DASHBOARD ROUTE
+app.get("/profile", verify, (req, res) => {
+  res.json({email:req.user.email,username:req.user.username,viewCount:req.user.viewCount,success:true});
+});
+
+
 //                                                             GETTING USER
 
 app.get("/user/:username", async(req, res) => {
