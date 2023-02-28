@@ -130,10 +130,10 @@ app.get("/", (req, res) => {
 
 //                                                        LOGIN ROUTE
 
-app.post("/login", async(req, res) => {
-  User.findOne({ username: req.body.username }, async(err, data) => {
+app.post("/login", async (req, res) => {
+  User.findOne({ username: req.body.username }, async (err, data) => {
     if (data) {
-      const pass = await bcrypt.compare(req.body.password,data.password);
+      const pass = await bcrypt.compare(req.body.password, data.password);
       if (pass) {
         const accessToken = jwt.sign(
           { username: req.body.username, password: data.password },
@@ -155,8 +155,8 @@ app.post("/login", async(req, res) => {
 
 //                                                        SIGNUP ROUTE
 
-app.post("/signup", userExists, async(req, res) => {
-  const pass = await bcrypt.hash(req.body.password,10);
+app.post("/signup", userExists, async (req, res) => {
+  const pass = await bcrypt.hash(req.body.password, 10);
   const newUser = new User({
     username: req.body.username,
     password: pass,
@@ -203,9 +203,10 @@ app.post("/codes", verify, (req, res) => {
 
 //                                                             GETTING USER
 
-app.get("/user/:username", (req, res) => {
-  User.find({ username: req.params.username }, function (err, doc) {
-    if (!err) {
+app.get("/user/:username", async(req, res) => {
+  await User.findOneAndUpdate({username :req.params.username}, {$inc : {'viewCount' : 1}});
+  User.find({ username: req.params.username },(err, doc) => {
+    if (!err && doc.length != 0) {
       const userID = doc[0]._id;
       Code.find({ userID: userID, isPublic: true }, function (err, doc) {
         if (!err) {
@@ -215,7 +216,12 @@ app.get("/user/:username", (req, res) => {
           });
           res.json({ codes: data, success: true });
         }
-      }).select({isPublic:0, userID: 0 });
+      }).select({ isPublic: 0, userID: 0 });
+    } else if (doc.length === 0) {
+      res.json({
+        message: "user not found check the username again",
+        success: false,
+      });
     }
   });
 });
