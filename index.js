@@ -234,7 +234,7 @@ app.get("/user/:username", async(req, res) => {
 
 //                                                             GETTING USER CODE
 
-app.get("/user/:username/:codeID", (req, res) => {
+app.get("/user/:username/id/:codeID", (req, res) => {
   Code.find({ _id: req.params.codeID, isPublic: true }, function (err, doc) {
     if (!err) {
       res.json({ code: doc, success: true });
