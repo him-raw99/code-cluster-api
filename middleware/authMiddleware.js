@@ -11,10 +11,8 @@ function verify(req, res, next) {
       } else {
         User.findOne({ username: user.username }, function (err, data) {
           if (data) {
-            if (data.password === user.password) {
               req.user = data;
               next();
-            }
           } else {
             res.send("re-login");
           }

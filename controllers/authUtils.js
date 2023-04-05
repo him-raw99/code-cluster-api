@@ -8,7 +8,7 @@ export const login = async (req, res) => {
       const pass = await bcrypt.compare(req.body.password, data.password);
       if (pass) {
         const accessToken = jwt.sign(
-          { username: req.body.username, password: data.password },
+          { username: req.body.username},
           process.env.KEY
         );
         res.json({
@@ -36,7 +36,7 @@ export const signup = async (req, res) => {
   console.log(pass);
   newUser.save();
   const accessToken = jwt.sign(
-    { username: newUser.username, password: newUser.password },
+    { username: newUser.username},
     process.env.KEY
   );
   res.json({ message: "User created", token: accessToken, isLogin: true });
